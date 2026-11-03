@@ -1,5 +1,6 @@
 package com.example.smartcafeadmin
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -49,6 +50,11 @@ class MainActivity : AppCompatActivity() {
 
         buttonAdd.setOnClickListener {
             saveItem()
+        }
+
+        val buttonOrders = findViewById<Button>(R.id.buttonOrders)
+        buttonOrders.setOnClickListener {
+            startActivity(Intent(this, OrdersActivity::class.java))
         }
 
         listMenu.setOnItemClickListener { _, _, position, _ ->
@@ -123,4 +129,4 @@ class MainActivity : AppCompatActivity() {
         }
         listMenu.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, lines)
     }
-}c
+}
