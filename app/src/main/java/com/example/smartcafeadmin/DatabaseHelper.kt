@@ -52,5 +52,24 @@ class DatabaseHelper(context: Context) :
         db.close()
         return items
     }
+    fun updateMenuItem(item: MenuItem): Int {
+        val db = writableDatabase
+        val values = ContentValues()
+        values.put("name", item.name)
+        values.put("category", item.category)
+        values.put("price", item.price)
+        values.put("available", if (item.available) 1 else 0)
+        val rows = db.update("MenuItems", values, "id = ?", arrayOf(item.id.toString()))
+        db.close()
+        return rows
+    }
+
+    fun deleteMenuItem(id: Int): Int {
+        val db = writableDatabase
+        val rows = db.delete("MenuItems", "id = ?", arrayOf(id.toString()))
+        db.close()
+        return rows
+    }
+
 
 }
