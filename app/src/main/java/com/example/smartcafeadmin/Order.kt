@@ -6,5 +6,6 @@ data class Order(
     val items: String,
     val total: Double,
     val status: String,
-    val orderDate: String
+    val orderDate: String,
+    val notes: String = ""
 )
