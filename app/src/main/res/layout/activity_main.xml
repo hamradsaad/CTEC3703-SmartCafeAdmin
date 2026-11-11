@@ -35,6 +35,13 @@
         android:hint="Price (e.g. 3.50)"
         android:inputType="numberDecimal" />
 
+    <EditText
+        android:id="@+id/editDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Description (optional)"
+        android:inputType="textCapSentences" />
+
     <CheckBox
         android:id="@+id/checkAvailable"
         android:layout_width="wrap_content"

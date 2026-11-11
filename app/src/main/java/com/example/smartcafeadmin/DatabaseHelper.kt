@@ -134,6 +134,28 @@ class DatabaseHelper(context: Context) :
         return rows
     }
 
+    fun addSampleMenuIfEmpty() {
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT COUNT(*) FROM MenuItems", null)
+        cursor.moveToFirst()
+        val count = cursor.getInt(0)
+        cursor.close()
+        db.close()
+
+        if (count == 0) {
+            addMenuItem("Latte", "Hot Drinks", 3.50, true, "Espresso with steamed milk")
+            addMenuItem("Cappuccino", "Hot Drinks", 3.40, true, "Espresso with foamed milk")
+            addMenuItem("Hot Chocolate", "Hot Drinks", 3.00, true, "Rich chocolate with steamed milk")
+            addMenuItem("White Chocolate Matcha", "Hot Drinks", 4.80, true, "Matcha latte with white chocolate")
+            addMenuItem("Iced Coffee", "Cold Drinks", 2.80, true, "Chilled coffee over ice")
+            addMenuItem("Orange Juice", "Cold Drinks", 3.00, true, "Freshly squeezed")
+            addMenuItem("Chicken Panini", "Food", 6.50, true, "Toasted panini with chicken and cheese")
+            addMenuItem("Msemman", "Food", 3.00, true, "Moroccan flatbread")
+            addMenuItem("Tiramisu", "Desserts", 6.50, true, "Coffee-soaked sponge with mascarpone")
+            addMenuItem("Banana Pudding", "Desserts", 5.95, true, "Layered banana, custard and biscuits")
+        }
+    }
+
     // ---------- Orders ----------
 
     private fun orderFrom(c: Cursor) = Order(

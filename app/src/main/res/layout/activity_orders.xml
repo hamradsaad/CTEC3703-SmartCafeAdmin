@@ -14,12 +14,36 @@
         android:textSize="22sp"
         android:textStyle="bold" />
 
+    <Button
+        android:id="@+id/buttonBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="← Back to menu" />
+
+    <Button
+        android:id="@+id/buttonSimulate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Simulate customer order" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Filter by status" />
+
+    <Spinner
+        android:id="@+id/spinnerFilter"
+        android:layout_width="match_parent"
+        android:layout_height="48dp" />
+
     <TextView
         android:id="@+id/textOrdersHint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:text="Tap an order to change its status" />
+        android:text="Tap an order to change its status or add a note" />
 
     <ListView
         android:id="@+id/listOrders"
