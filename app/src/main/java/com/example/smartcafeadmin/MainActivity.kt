@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,6 +31,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!AuthGuard.isSignedIn(this)) return
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -55,12 +58,27 @@ class MainActivity : AppCompatActivity() {
             saveItem()
         }
 
-        val buttonOrders = findViewById<Button>(R.id.buttonOrders)
-        buttonOrders.setOnClickListener {
+        findViewById<Button>(R.id.buttonOrders).setOnClickListener {
             startActivity(Intent(this, OrdersActivity::class.java))
         }
+
         findViewById<Button>(R.id.buttonAnalytics).setOnClickListener {
             startActivity(Intent(this, AnalyticsActivity::class.java))
+        }
+
+        findViewById<Button>(R.id.buttonLogout).setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle("Log out")
+                .setMessage("Are you sure you want to log out?")
+                .setPositiveButton("Log out") { _, _ ->
+                    FirebaseAuth.getInstance().signOut()
+                    val intent = Intent(this, LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
         }
 
         listMenu.setOnItemClickListener { _, _, position, _ ->

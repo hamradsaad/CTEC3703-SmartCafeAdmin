@@ -20,6 +20,7 @@ class AnalyticsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!AuthGuard.isSignedIn(this)) return
         enableEdgeToEdge()
         setContentView(R.layout.activity_analytics)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
