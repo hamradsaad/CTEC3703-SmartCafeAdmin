@@ -61,6 +61,12 @@
         android:layout_height="wrap_content"
         android:text="View orders" />
 
+    <Button
+        android:id="@+id/buttonAnalytics"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="View analytics" />
+
     <ListView
         android:id="@+id/listMenu"
         android:layout_width="match_parent"

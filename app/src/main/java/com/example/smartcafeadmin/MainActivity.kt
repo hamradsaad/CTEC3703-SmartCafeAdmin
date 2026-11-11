@@ -59,6 +59,9 @@ class MainActivity : AppCompatActivity() {
         buttonOrders.setOnClickListener {
             startActivity(Intent(this, OrdersActivity::class.java))
         }
+        findViewById<Button>(R.id.buttonAnalytics).setOnClickListener {
+            startActivity(Intent(this, AnalyticsActivity::class.java))
+        }
 
         listMenu.setOnItemClickListener { _, _, position, _ ->
             val item = menuItems[position]
