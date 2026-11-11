@@ -247,15 +247,24 @@ class DatabaseHelper(context: Context) :
         return lines
     }
 
+    // Only saves the new status if the change is allowed by OrderRules
     fun updateOrderStatus(id: Int, status: String): Int {
         val db = writableDatabase
+        val cursor = db.rawQuery("SELECT status FROM Orders WHERE id = ?", arrayOf(id.toString()))
+        val current = if (cursor.moveToFirst()) cursor.getString(0) else null
+        cursor.close()
+
+        if (current == null || !OrderRules.canChangeStatus(current, status)) {
+            db.close()
+            return 0
+        }
+
         val values = ContentValues()
         values.put("status", status)
         val rows = db.update("Orders", values, "id = ?", arrayOf(id.toString()))
         db.close()
         return rows
     }
-
     fun updateOrderNotes(id: Int, notes: String): Int {
         val db = writableDatabase
         val values = ContentValues()

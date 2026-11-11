@@ -25,8 +25,7 @@ class OrdersActivity : AppCompatActivity() {
     private lateinit var spinnerFilter: Spinner
     private var orders: List<Order> = emptyList()
 
-    private val statuses = arrayOf("Pending", "Preparing", "Ready", "Collected")
-    private val filterOptions = arrayOf("All", "Pending", "Preparing", "Ready", "Collected")
+    private val filterOptions = arrayOf("All") + OrderRules.STATUSES.toTypedArray()
 
     // Fictional data used by the customer simulator
     private val customerNames = listOf("Aisha", "Tom", "Priya", "James", "Sara", "Ben", "Yusuf", "Chloe", "Omar", "Emily")
@@ -47,6 +46,7 @@ class OrdersActivity : AppCompatActivity() {
         spinnerFilter = findViewById(R.id.spinnerFilter)
 
         db.addSampleOrdersIfEmpty()
+
         findViewById<Button>(R.id.buttonBack).setOnClickListener {
             finish()
         }
@@ -134,12 +134,23 @@ class OrdersActivity : AppCompatActivity() {
     }
 
     private fun changeStatus(order: Order) {
+        val options = OrderRules.allowedNextStatuses(order.status)
+
+        if (options.isEmpty()) {
+            Toast.makeText(this, "Order #${order.id} is ${order.status} and cannot be changed", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         AlertDialog.Builder(this)
-            .setTitle("Order #${order.id} – new status")
-            .setItems(statuses) { _, which ->
-                val newStatus = statuses[which]
-                db.updateOrderStatus(order.id, newStatus)
-                Toast.makeText(this, "Order #${order.id} is now $newStatus", Toast.LENGTH_SHORT).show()
+            .setTitle("Order #${order.id}: ${order.status} → ?")
+            .setItems(options.toTypedArray()) { _, which ->
+                val newStatus = options[which]
+                val rows = db.updateOrderStatus(order.id, newStatus)
+                if (rows == 1) {
+                    Toast.makeText(this, "Order #${order.id} is now $newStatus", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Status change not allowed", Toast.LENGTH_SHORT).show()
+                }
                 showOrders()
             }
             .setNegativeButton("Cancel", null)
