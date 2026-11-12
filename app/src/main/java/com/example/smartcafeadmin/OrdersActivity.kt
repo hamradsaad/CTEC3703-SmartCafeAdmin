@@ -1,6 +1,8 @@
 package com.example.smartcafeadmin
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -14,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.materialswitch.MaterialSwitch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -31,9 +34,24 @@ class OrdersActivity : AppCompatActivity() {
     private val customerNames = listOf("Aisha", "Tom", "Priya", "James", "Sara", "Ben", "Yusuf", "Chloe", "Omar", "Emily")
     private val sampleNotes = listOf("", "", "", "Extra shot", "No sugar", "Oat milk please", "Takeaway", "Extra hot")
 
+    // Automated order generator: creates a new customer order every 20 seconds while switched on
+    private val handler = Handler(Looper.getMainLooper())
+    private var autoOrdersOn = false
+    private val autoOrderRunnable = object : Runnable {
+        override fun run() {
+            simulateCustomerOrder()
+            handler.postDelayed(this, AUTO_ORDER_INTERVAL_MS)
+        }
+    }
+
+    companion object {
+        private const val AUTO_ORDER_INTERVAL_MS = 20_000L
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!AuthGuard.isSignedIn(this)) return
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_orders)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -61,15 +79,42 @@ class OrdersActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        // Customer simulator
+        // Customer simulator (one order)
         findViewById<Button>(R.id.buttonSimulate).setOnClickListener {
             simulateCustomerOrder()
+        }
+
+        // Automated order generator switch
+        findViewById<MaterialSwitch>(R.id.switchAutoOrders).setOnCheckedChangeListener { _, isChecked ->
+            autoOrdersOn = isChecked
+            handler.removeCallbacks(autoOrderRunnable)
+            if (isChecked) {
+                handler.postDelayed(autoOrderRunnable, AUTO_ORDER_INTERVAL_MS)
+                Toast.makeText(this, "Auto orders ON: a new order every 20 seconds", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Auto orders OFF", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // Tap an order: show details, change status or edit note
         listOrders.setOnItemClickListener { _, _, position, _ ->
             showOrderDetails(orders[position])
         }
+    }
+
+    // Restart the generator when returning to this screen
+    override fun onResume() {
+        super.onResume()
+        if (autoOrdersOn) {
+            handler.removeCallbacks(autoOrderRunnable)
+            handler.postDelayed(autoOrderRunnable, AUTO_ORDER_INTERVAL_MS)
+        }
+    }
+
+    // Stop the generator when leaving this screen
+    override fun onPause() {
+        super.onPause()
+        handler.removeCallbacks(autoOrderRunnable)
     }
 
     private fun showOrders() {
@@ -86,10 +131,6 @@ class OrdersActivity : AppCompatActivity() {
             line
         }
         listOrders.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, lines)
-
-        if (orders.isEmpty()) {
-            Toast.makeText(this, "No $filter orders", Toast.LENGTH_SHORT).show()
-        }
     }
 
     private fun simulateCustomerOrder() {

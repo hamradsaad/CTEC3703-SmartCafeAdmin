@@ -6,25 +6,40 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/textOrdersTitle"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Orders"
-        android:textSize="22sp"
-        android:textStyle="bold" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/buttonBack"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="← Back to menu" />
+        <Button
+            android:id="@+id/buttonBack"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="← Back" />
+
+        <TextView
+            android:id="@+id/textOrdersTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Orders"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/buttonSimulate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Simulate customer order" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switchAutoOrders"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Auto orders (new customer order every 20 seconds)" />
 
     <TextView
         android:layout_width="wrap_content"
