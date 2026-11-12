@@ -2,32 +2,26 @@ package com.example.smartcafeadmin
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.ArrayAdapter
+import android.view.View
 import android.widget.Button
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.ListView
-import android.widget.Toast
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.google.firebase.auth.FirebaseAuth
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 
+// Menu screen: cards with pictures and category filter (CR-01, CR-02, CR-03)
 class MainActivity : AppCompatActivity() {
 
     private lateinit var db: DatabaseHelper
-    private lateinit var listMenu: ListView
-    private lateinit var editName: EditText
-    private lateinit var editCategory: EditText
-    private lateinit var editPrice: EditText
-    private lateinit var editDescription: EditText
-    private lateinit var checkAvailable: CheckBox
-    private lateinit var buttonAdd: Button
-
-    private var menuItems: List<MenuItem> = emptyList()
-    private var selectedItem: MenuItem? = null
+    private lateinit var adapter: MenuAdapter
+    private lateinit var textEmpty: TextView
+    private var selectedCategory = "All"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,120 +38,60 @@ class MainActivity : AppCompatActivity() {
         db = DatabaseHelper(this)
         db.addSampleMenuIfEmpty()
 
-        editName = findViewById(R.id.editName)
-        editCategory = findViewById(R.id.editCategory)
-        editPrice = findViewById(R.id.editPrice)
-        editDescription = findViewById(R.id.editDescription)
-        checkAvailable = findViewById(R.id.checkAvailable)
-        buttonAdd = findViewById(R.id.buttonAdd)
-        listMenu = findViewById(R.id.listMenu)
+        textEmpty = findViewById(R.id.textEmpty)
 
-        showMenu()
+        // Tap a card to open its details page
+        adapter = MenuAdapter { item ->
+            val intent = Intent(this, ItemDetailActivity::class.java)
+            intent.putExtra("itemId", item.id)
+            startActivity(intent)
+        }
+        val recycler = findViewById<RecyclerView>(R.id.recyclerMenu)
+        recycler.layoutManager = LinearLayoutManager(this)
+        recycler.adapter = adapter
 
-        buttonAdd.setOnClickListener {
-            saveItem()
+        findViewById<Button>(R.id.buttonBack).setOnClickListener { finish() }
+
+        // Add a new item
+        findViewById<ExtendedFloatingActionButton>(R.id.fabAdd).setOnClickListener {
+            startActivity(Intent(this, EditItemActivity::class.java))
         }
 
-        findViewById<Button>(R.id.buttonOrders).setOnClickListener {
-            startActivity(Intent(this, OrdersActivity::class.java))
-        }
-
-        findViewById<Button>(R.id.buttonAnalytics).setOnClickListener {
-            startActivity(Intent(this, AnalyticsActivity::class.java))
-        }
-
-        findViewById<Button>(R.id.buttonLogout).setOnClickListener {
-            AlertDialog.Builder(this)
-                .setTitle("Log out")
-                .setMessage("Are you sure you want to log out?")
-                .setPositiveButton("Log out") { _, _ ->
-                    FirebaseAuth.getInstance().signOut()
-                    val intent = Intent(this, LoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                    finish()
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
-        }
-
-        listMenu.setOnItemClickListener { _, _, position, _ ->
-            val item = menuItems[position]
-            selectedItem = item
-            editName.setText(item.name)
-            editCategory.setText(item.category)
-            editPrice.setText(item.price.toString())
-            editDescription.setText(item.description)
-            checkAvailable.isChecked = item.available
-            buttonAdd.text = "Update item"
-        }
-
-        listMenu.setOnItemLongClickListener { _, _, position, _ ->
-            val item = menuItems[position]
-            AlertDialog.Builder(this)
-                .setTitle("Delete item")
-                .setMessage("Delete ${item.name} from the menu?")
-                .setPositiveButton("Delete") { _, _ ->
-                    db.deleteMenuItem(item.id)
-                    Toast.makeText(this, "${item.name} deleted", Toast.LENGTH_SHORT).show()
-                    clearForm()
-                    showMenu()
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
-            true
-        }
+        setupCategoryChips()
     }
 
-    private fun saveItem() {
-        val name = editName.text.toString().trim()
-        val category = editCategory.text.toString().trim()
-        val price = editPrice.text.toString().toDoubleOrNull()
-        val description = editDescription.text.toString().trim()
-
-        if (name.isEmpty() || category.isEmpty() || price == null || price <= 0) {
-            Toast.makeText(this, "Please enter a name, category and valid price", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val current = selectedItem
-        if (current == null) {
-            val result = db.addMenuItem(name, category, price, checkAvailable.isChecked, description)
-            if (result == -1L) {
-                Toast.makeText(this, "Could not save item", Toast.LENGTH_SHORT).show()
-                return
-            }
-            Toast.makeText(this, "$name added", Toast.LENGTH_SHORT).show()
-        } else {
-            val updated = MenuItem(current.id, name, category, price, checkAvailable.isChecked, description)
-            db.updateMenuItem(updated)
-            Toast.makeText(this, "$name updated", Toast.LENGTH_SHORT).show()
-        }
-
-        clearForm()
-        showMenu()
+    // Reload whenever we come back from another screen
+    override fun onResume() {
+        super.onResume()
+        if (::adapter.isInitialized) showMenu()
     }
 
-    private fun clearForm() {
-        editName.text.clear()
-        editCategory.text.clear()
-        editPrice.text.clear()
-        editDescription.text.clear()
-        checkAvailable.isChecked = true
-        selectedItem = null
-        buttonAdd.text = "Add item"
+    private fun setupCategoryChips() {
+        val group = findViewById<ChipGroup>(R.id.chipGroupCategories)
+
+        for (name in listOf("All") + Categories.ALL) {
+            val chip = Chip(this)
+            chip.id = View.generateViewId()
+            chip.text = name
+            chip.tag = name
+            chip.isCheckable = true
+            chip.isCheckedIconVisible = false
+            group.addView(chip)
+            if (name == selectedCategory) chip.isChecked = true
+        }
+
+        group.setOnCheckedStateChangeListener { g, checkedIds ->
+            val chip = checkedIds.firstOrNull()?.let { g.findViewById<Chip>(it) }
+            selectedCategory = chip?.tag as? String ?: "All"
+            showMenu()
+        }
     }
 
     private fun showMenu() {
-        menuItems = db.getAllMenuItems()
-        val lines = menuItems.map { item ->
-            val status = if (item.available) "Available" else "Sold out"
-            var line = "${item.name}  |  ${item.category}  |  £${"%.2f".format(item.price)}  |  $status"
-            if (item.description.isNotEmpty()) {
-                line += "\n${item.description}"
-            }
-            line
-        }
-        listMenu.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, lines)
+        val items = if (selectedCategory == "All") db.getAllMenuItems()
+        else db.getMenuItemsByCategory(selectedCategory)
+
+        adapter.submit(items)
+        textEmpty.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
     }
 }

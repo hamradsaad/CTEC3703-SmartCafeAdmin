@@ -6,5 +6,6 @@ data class MenuItem(
     val category: String,
     val price: Double,
     val available: Boolean,
-    val description: String = ""
+    val description: String = "",
+    val imagePath: String = ""
 )

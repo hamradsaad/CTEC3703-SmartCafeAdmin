@@ -92,7 +92,7 @@ class LoginActivity : AppCompatActivity() {
             .addOnSuccessListener { doc ->
                 val role = doc.getString("role")
                 if (role == "admin") {
-                    startActivity(Intent(this, MainActivity::class.java))
+                    startActivity(Intent(this, HomeActivity::class.java))
                     finish()
                 } else {
                     auth.signOut()

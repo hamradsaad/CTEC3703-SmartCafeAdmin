@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 class DatabaseHelper(context: Context) :
-    SQLiteOpenHelper(context, "SmartCafe.db", null, 3) {
+    SQLiteOpenHelper(context, "SmartCafe.db", null, 4) {
 
     override fun onConfigure(db: SQLiteDatabase) {
         super.onConfigure(db)
@@ -25,6 +25,7 @@ class DatabaseHelper(context: Context) :
         )
         createOrdersTable(db)
         upgradeToVersion3(db)
+        upgradeToVersion4(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -34,8 +35,10 @@ class DatabaseHelper(context: Context) :
         if (oldVersion < 3) {
             upgradeToVersion3(db)
             // Old sample orders have no item rows, so clear them.
-            // New sample orders are added the next time the app opens.
             db.execSQL("DELETE FROM Orders")
+        }
+        if (oldVersion < 4) {
+            upgradeToVersion4(db)
         }
     }
 
@@ -66,6 +69,11 @@ class DatabaseHelper(context: Context) :
         )
     }
 
+    // Version 4 (CR-03): picture for each menu item
+    private fun upgradeToVersion4(db: SQLiteDatabase) {
+        db.execSQL("ALTER TABLE MenuItems ADD COLUMN imagePath TEXT NOT NULL DEFAULT ''")
+    }
+
     // ---------- Menu items ----------
 
     private fun menuItemFrom(c: Cursor) = MenuItem(
@@ -74,10 +82,18 @@ class DatabaseHelper(context: Context) :
         category = c.getString(c.getColumnIndexOrThrow("category")),
         price = c.getDouble(c.getColumnIndexOrThrow("price")),
         available = c.getInt(c.getColumnIndexOrThrow("available")) == 1,
-        description = c.getString(c.getColumnIndexOrThrow("description"))
+        description = c.getString(c.getColumnIndexOrThrow("description")),
+        imagePath = c.getString(c.getColumnIndexOrThrow("imagePath"))
     )
 
-    fun addMenuItem(name: String, category: String, price: Double, available: Boolean, description: String = ""): Long {
+    fun addMenuItem(
+        name: String,
+        category: String,
+        price: Double,
+        available: Boolean,
+        description: String = "",
+        imagePath: String = ""
+    ): Long {
         val db = writableDatabase
         val values = ContentValues()
         values.put("name", name)
@@ -85,6 +101,7 @@ class DatabaseHelper(context: Context) :
         values.put("price", price)
         values.put("available", if (available) 1 else 0)
         values.put("description", description)
+        values.put("imagePath", imagePath)
         val result = db.insert("MenuItems", null, values)
         db.close()
         return result
@@ -93,13 +110,34 @@ class DatabaseHelper(context: Context) :
     fun getAllMenuItems(): List<MenuItem> {
         val items = mutableListOf<MenuItem>()
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM MenuItems", null)
+        val cursor = db.rawQuery("SELECT * FROM MenuItems ORDER BY category, name", null)
         while (cursor.moveToNext()) {
             items.add(menuItemFrom(cursor))
         }
         cursor.close()
         db.close()
         return items
+    }
+
+    fun getMenuItemsByCategory(category: String): List<MenuItem> {
+        val items = mutableListOf<MenuItem>()
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM MenuItems WHERE category = ? ORDER BY name", arrayOf(category))
+        while (cursor.moveToNext()) {
+            items.add(menuItemFrom(cursor))
+        }
+        cursor.close()
+        db.close()
+        return items
+    }
+
+    fun getMenuItem(id: Int): MenuItem? {
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM MenuItems WHERE id = ?", arrayOf(id.toString()))
+        val item = if (cursor.moveToFirst()) menuItemFrom(cursor) else null
+        cursor.close()
+        db.close()
+        return item
     }
 
     fun getAvailableMenuItems(): List<MenuItem> {
@@ -122,6 +160,7 @@ class DatabaseHelper(context: Context) :
         values.put("price", item.price)
         values.put("available", if (item.available) 1 else 0)
         values.put("description", item.description)
+        values.put("imagePath", item.imagePath)
         val rows = db.update("MenuItems", values, "id = ?", arrayOf(item.id.toString()))
         db.close()
         return rows
@@ -265,6 +304,7 @@ class DatabaseHelper(context: Context) :
         db.close()
         return rows
     }
+
     fun updateOrderNotes(id: Int, notes: String): Int {
         val db = writableDatabase
         val values = ContentValues()

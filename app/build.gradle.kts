@@ -40,6 +40,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
+    implementation(libs.androidx.recyclerview)
 
     // Firebase (login + user roles)
     implementation(platform(libs.firebase.bom))
