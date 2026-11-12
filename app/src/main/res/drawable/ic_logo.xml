@@ -7,13 +7,13 @@
 
     <!-- Purple circle -->
     <path
-        android:fillColor="#6750A4"
+        android:fillColor="#6F4E37"
         android:pathData="M60,60m-58,0a58,58 0,1 1,116 0a58,58 0,1 1,-116 0" />
 
     <!-- Inner ring -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#EADDFF"
+        android:strokeColor="#F3E5D8"
         android:strokeWidth="2"
         android:pathData="M60,60m-50,0a50,50 0,1 1,100 0a50,50 0,1 1,-100 0" />
 
@@ -56,7 +56,7 @@
 
     <!-- Coffee bean -->
     <path
-        android:fillColor="#6750A4"
+        android:fillColor="#6F4E37"
         android:pathData="M53,66 a7,9 0 1,0 14,0 a7,9 0 1,0 -14,0" />
     <path
         android:fillColor="#00000000"

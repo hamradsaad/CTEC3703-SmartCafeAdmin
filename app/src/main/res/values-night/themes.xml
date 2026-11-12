@@ -1,7 +1,27 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.SmartCafeAdmin" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+
+    <!-- Smart Café theme: coffee brown and cream (CR-01) -->
+    <style name="Base.Theme.SmartCafeAdmin" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">#6F4E37</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">#F3E5D8</item>
+        <item name="colorOnPrimaryContainer">#3E2723</item>
+
+        <item name="colorSecondary">#A47148</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="colorSecondaryContainer">#F6E3CF</item>
+        <item name="colorOnSecondaryContainer">#3E2723</item>
+
+        <item name="android:colorBackground">#FFF8F1</item>
+        <item name="colorOnBackground">#2B1D14</item>
+        <item name="colorSurface">#FFF8F1</item>
+        <item name="colorOnSurface">#2B1D14</item>
+        <item name="colorSurfaceVariant">#EFE0D2</item>
+        <item name="colorOnSurfaceVariant">#5D4A3C</item>
+        <item name="colorOutline">#8D7A6B</item>
+
+        <item name="android:windowLightStatusBar">true</item>
     </style>
+
+    <style name="Theme.SmartCafeAdmin" parent="Base.Theme.SmartCafeAdmin" />
 </resources>

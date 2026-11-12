@@ -20,7 +20,7 @@ class BarChartView @JvmOverloads constructor(
     private val density = resources.displayMetrics.density
 
     private val barPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#6750A4")
+        color = Color.parseColor("#6F4E37")
     }
     private val axisPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.LTGRAY
