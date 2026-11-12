@@ -21,22 +21,39 @@ object ImageStorage {
             context.contentResolver.openInputStream(uri)?.use {
                 BitmapFactory.decodeStream(it, null, bounds)
             }
-
             val options = BitmapFactory.Options().apply {
                 inSampleSize = sampleSize(bounds.outWidth, bounds.outHeight, MAX_SIZE)
             }
             val bitmap = context.contentResolver.openInputStream(uri)?.use {
                 BitmapFactory.decodeStream(it, null, options)
             } ?: return null
-
-            val dir = File(context.filesDir, FOLDER)
-            dir.mkdirs()
-            val file = File(dir, "item_${System.currentTimeMillis()}.jpg")
-            FileOutputStream(file).use { bitmap.compress(Bitmap.CompressFormat.JPEG, 85, it) }
-            file.absolutePath
+            saveBitmap(context, bitmap)
         } catch (e: Exception) {
             null
         }
+    }
+
+    // Copies a photo bundled inside the app (res/drawable-nodpi) into private storage
+    fun saveFromResource(context: Context, resId: Int): String? {
+        return try {
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeResource(context.resources, resId, bounds)
+            val options = BitmapFactory.Options().apply {
+                inSampleSize = sampleSize(bounds.outWidth, bounds.outHeight, MAX_SIZE)
+            }
+            val bitmap = BitmapFactory.decodeResource(context.resources, resId, options) ?: return null
+            saveBitmap(context, bitmap)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun saveBitmap(context: Context, bitmap: Bitmap): String {
+        val dir = File(context.filesDir, FOLDER)
+        dir.mkdirs()
+        val file = File(dir, "item_${System.nanoTime()}.jpg")
+        FileOutputStream(file).use { bitmap.compress(Bitmap.CompressFormat.JPEG, 85, it) }
+        return file.absolutePath
     }
 
     // Loads a smaller version of the picture for showing on screen

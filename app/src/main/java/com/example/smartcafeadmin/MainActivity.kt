@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity() {
 
         db = DatabaseHelper(this)
         db.addSampleMenuIfEmpty()
+        SampleImages.attach(this, db)
 
         textEmpty = findViewById(R.id.textEmpty)
 
