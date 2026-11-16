@@ -46,20 +46,25 @@ class HomeActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.buttonPrivacy).setOnClickListener {
             PolicyActivity.open(this, PolicyActivity.PRIVACY)
-        }
-        findViewById<Button>(R.id.buttonLogout).setOnClickListener {
-            AlertDialog.Builder(this)
-                .setTitle("Log out")
-                .setMessage("Are you sure you want to log out?")
-                .setPositiveButton("Log out") { _, _ ->
-                    FirebaseAuth.getInstance().signOut()
-                    val intent = Intent(this, LoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                    finish()
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
+
+            findViewById<Button>(R.id.buttonPrivacy).setOnClickListener {
+                PolicyActivity.open(this, PolicyActivity.PRIVACY)
+            }
+            findViewById<Button>(R.id.buttonLogout).setOnClickListener {
+                AlertDialog.Builder(this)
+                    .setTitle("Log out")
+                    .setMessage("Are you sure you want to log out?")
+                    .setPositiveButton("Log out") { _, _ ->
+                        FirebaseAuth.getInstance().signOut()
+                        val intent = Intent(this, LoginActivity::class.java)
+                        intent.flags =
+                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        finish()
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
         }
     }
 }

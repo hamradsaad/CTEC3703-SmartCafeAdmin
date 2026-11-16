@@ -140,5 +140,6 @@
                 android:layout_height="wrap_content"
                 android:text="Privacy Notice" />
         </LinearLayout>
+
     </LinearLayout>
 </ScrollView>
