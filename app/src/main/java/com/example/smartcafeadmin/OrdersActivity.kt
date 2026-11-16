@@ -1,5 +1,7 @@
 package com.example.smartcafeadmin
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -12,6 +14,7 @@ import android.widget.ListView
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -24,7 +27,6 @@ import java.util.Locale
 class OrdersActivity : AppCompatActivity() {
 
     private lateinit var db: DatabaseHelper
-
     private lateinit var feedbackRepo: FeedbackRepository
     private lateinit var listOrders: ListView
     private lateinit var spinnerFilter: Spinner
@@ -46,8 +48,17 @@ class OrdersActivity : AppCompatActivity() {
         }
     }
 
+    // Notification permission (Android 13+). The app still works if it is refused.
+    private val requestNotificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            val message = if (granted) "Notifications on: you'll be alerted about order updates"
+            else "Notifications off: updates will still show on this screen"
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        }
+
     companion object {
         private const val AUTO_ORDER_INTERVAL_MS = 20_000L
+        private var askedForNotificationsThisSession = false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,6 +114,24 @@ class OrdersActivity : AppCompatActivity() {
         listOrders.setOnItemClickListener { _, _, position, _ ->
             showOrderDetails(orders[position])
         }
+
+        askForNotificationPermission()
+    }
+
+    // Explain why first, then ask. Only asks once per session.
+    private fun askForNotificationPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        if (NotificationHelper.hasPermission(this) || askedForNotificationsThisSession) return
+        askedForNotificationsThisSession = true
+
+        AlertDialog.Builder(this)
+            .setTitle("Order notifications")
+            .setMessage("Allow notifications so you're alerted when a new order arrives or an order's status changes. You can change this later in Settings.")
+            .setPositiveButton("Continue") { _, _ ->
+                requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+            .setNegativeButton("Not now", null)
+            .show()
     }
 
     // Restart the generator when returning to this screen
@@ -159,6 +188,15 @@ class OrdersActivity : AppCompatActivity() {
         }
 
         Toast.makeText(this, "New order #$orderId from $name", Toast.LENGTH_SHORT).show()
+
+        // Notify staff about the new order
+        val itemsText = lines.joinToString(", ") { "${it.quantity}x ${it.itemName}" }
+        NotificationHelper.show(
+            this, orderId.toInt(),
+            OrderMessages.newOrderTitle(orderId.toInt()),
+            OrderMessages.newOrderText(name, itemsText)
+        )
+
         showOrders()
     }
 
@@ -193,6 +231,14 @@ class OrdersActivity : AppCompatActivity() {
                 val rows = db.updateOrderStatus(order.id, newStatus)
                 if (rows == 1) {
                     Toast.makeText(this, "Order #${order.id} is now $newStatus", Toast.LENGTH_SHORT).show()
+
+                    // Order status notification (CAFE-09)
+                    NotificationHelper.show(
+                        this, order.id,
+                        OrderMessages.statusTitle(order.id),
+                        OrderMessages.statusText(order.customerName, newStatus)
+                    )
+
                     if (newStatus == "Collected") simulateCustomerFeedback(order)
                 } else {
                     Toast.makeText(this, "Status change not allowed", Toast.LENGTH_SHORT).show()
@@ -202,6 +248,7 @@ class OrdersActivity : AppCompatActivity() {
             .setNegativeButton("Cancel", null)
             .show()
     }
+
     // Simulated customer: leaves a star rating and comment when their order is collected
     private fun simulateCustomerFeedback(order: Order) {
         val rating = FeedbackRules.simulatedRating()
@@ -210,6 +257,7 @@ class OrdersActivity : AppCompatActivity() {
         feedbackRepo.addFeedback(order.id, order.customerName, rating, comment, today)
         Toast.makeText(this, "${order.customerName} left ${FeedbackRules.stars(rating)} feedback", Toast.LENGTH_SHORT).show()
     }
+
     private fun editNote(order: Order) {
         val input = EditText(this)
         input.hint = "e.g. Extra shot (optional)"
