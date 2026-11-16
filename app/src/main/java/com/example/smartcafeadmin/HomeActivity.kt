@@ -41,6 +41,12 @@ class HomeActivity : AppCompatActivity() {
         findViewById<Button>(R.id.buttonFeedback).setOnClickListener {
             startActivity(Intent(this, FeedbackActivity::class.java))
         }
+        findViewById<Button>(R.id.buttonTerms).setOnClickListener {
+            PolicyActivity.open(this, PolicyActivity.TERMS)
+        }
+        findViewById<Button>(R.id.buttonPrivacy).setOnClickListener {
+            PolicyActivity.open(this, PolicyActivity.PRIVACY)
+        }
         findViewById<Button>(R.id.buttonLogout).setOnClickListener {
             AlertDialog.Builder(this)
                 .setTitle("Log out")

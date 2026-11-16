@@ -53,7 +53,12 @@ class LoginActivity : AppCompatActivity() {
         buttonRegister.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
-
+        findViewById<Button>(R.id.buttonTerms).setOnClickListener {
+            PolicyActivity.open(this, PolicyActivity.TERMS)
+        }
+        findViewById<Button>(R.id.buttonPrivacy).setOnClickListener {
+            PolicyActivity.open(this, PolicyActivity.PRIVACY)
+        }
         // Already signed in from last time: re-check the role, then continue
         auth.currentUser?.let { checkRoleAndContinue(it.uid) }
     }

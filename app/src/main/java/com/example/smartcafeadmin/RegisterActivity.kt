@@ -3,6 +3,7 @@ package com.example.smartcafeadmin
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -27,6 +28,7 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var editEmail: EditText
     private lateinit var editPassword: EditText
     private lateinit var editConfirm: EditText
+    private lateinit var checkTerms: CheckBox
     private lateinit var buttonCreate: Button
     private lateinit var progress: ProgressBar
     private lateinit var textError: TextView
@@ -47,12 +49,15 @@ class RegisterActivity : AppCompatActivity() {
         editEmail = findViewById(R.id.editEmail)
         editPassword = findViewById(R.id.editPassword)
         editConfirm = findViewById(R.id.editConfirm)
+        checkTerms = findViewById(R.id.checkTerms)
         buttonCreate = findViewById(R.id.buttonCreate)
         progress = findViewById(R.id.progress)
         textError = findViewById(R.id.textError)
 
         buttonCreate.setOnClickListener { register() }
         findViewById<Button>(R.id.buttonBack).setOnClickListener { finish() }
+        findViewById<Button>(R.id.buttonTerms).setOnClickListener { PolicyActivity.open(this, PolicyActivity.TERMS) }
+        findViewById<Button>(R.id.buttonPrivacy).setOnClickListener { PolicyActivity.open(this, PolicyActivity.PRIVACY) }
     }
 
     private fun register() {
@@ -63,6 +68,10 @@ class RegisterActivity : AppCompatActivity() {
         val error = AuthValidator.validateRegistration(email, password, confirm)
         if (error != null) {
             showError(error)
+            return
+        }
+        if (!checkTerms.isChecked) {
+            showError("Please read and accept the Terms and Conditions to create an account")
             return
         }
 
@@ -77,10 +86,13 @@ class RegisterActivity : AppCompatActivity() {
                 }
 
                 // Every new account starts as "customer". Admin access is granted by the café manager.
+                // We also record which version of the Terms was accepted, and when.
                 val profile = hashMapOf(
                     "email" to email,
                     "role" to "customer",
-                    "createdAt" to FieldValue.serverTimestamp()
+                    "createdAt" to FieldValue.serverTimestamp(),
+                    "termsVersion" to PolicyText.TERMS_VERSION,
+                    "termsAcceptedAt" to FieldValue.serverTimestamp()
                 )
 
                 firestore.collection("users").document(uid).set(profile)
@@ -125,4 +137,3 @@ class RegisterActivity : AppCompatActivity() {
         textError.visibility = View.VISIBLE
     }
 }
-
