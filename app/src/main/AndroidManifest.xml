@@ -47,6 +47,9 @@
         <activity
             android:name=".AnalyticsActivity"
             android:exported="false" />
+        <activity
+            android:name=".FeedbackActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 class DatabaseHelper(context: Context) :
-    SQLiteOpenHelper(context, "SmartCafe.db", null, 4) {
+    SQLiteOpenHelper(context, "SmartCafe.db", null, 5) {
 
     override fun onConfigure(db: SQLiteDatabase) {
         super.onConfigure(db)
@@ -26,6 +26,7 @@ class DatabaseHelper(context: Context) :
         createOrdersTable(db)
         upgradeToVersion3(db)
         upgradeToVersion4(db)
+        upgradeToVersion5(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -40,8 +41,23 @@ class DatabaseHelper(context: Context) :
         if (oldVersion < 4) {
             upgradeToVersion4(db)
         }
+        if (oldVersion < 5){
+            upgradeToVersion5(db)
+        }
     }
-
+    // Version 5: customer feedback and star ratings (CAFE-08)
+    private fun upgradeToVersion5(db: SQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE Feedback (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "orderId INTEGER NOT NULL, " +
+                    "customerName TEXT NOT NULL, " +
+                    "rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5), " +
+                    "comment TEXT NOT NULL DEFAULT '', " +
+                    "date TEXT NOT NULL, " +
+                    "FOREIGN KEY(orderId) REFERENCES Orders(id) ON DELETE CASCADE)"
+        )
+    }
     private fun createOrdersTable(db: SQLiteDatabase) {
         db.execSQL(
             "CREATE TABLE Orders (" +

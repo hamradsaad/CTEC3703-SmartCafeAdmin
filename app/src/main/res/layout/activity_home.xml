@@ -96,8 +96,21 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="32dp"
+            android:layout_marginBottom="16dp"
             android:text="Revenue, best sellers and insights" />
+
+        <Button
+            android:id="@+id/buttonFeedback"
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:text="⭐  Customer feedback"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="32dp"
+            android:text="Star ratings and comments from customers" />
 
         <Button
             android:id="@+id/buttonLogout"

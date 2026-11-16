@@ -24,6 +24,8 @@ import java.util.Locale
 class OrdersActivity : AppCompatActivity() {
 
     private lateinit var db: DatabaseHelper
+
+    private lateinit var feedbackRepo: FeedbackRepository
     private lateinit var listOrders: ListView
     private lateinit var spinnerFilter: Spinner
     private var orders: List<Order> = emptyList()
@@ -61,6 +63,7 @@ class OrdersActivity : AppCompatActivity() {
         }
 
         db = DatabaseHelper(this)
+        feedbackRepo = FeedbackRepository(this)
         listOrders = findViewById(R.id.listOrders)
         spinnerFilter = findViewById(R.id.spinnerFilter)
 
@@ -190,6 +193,7 @@ class OrdersActivity : AppCompatActivity() {
                 val rows = db.updateOrderStatus(order.id, newStatus)
                 if (rows == 1) {
                     Toast.makeText(this, "Order #${order.id} is now $newStatus", Toast.LENGTH_SHORT).show()
+                    if (newStatus == "Collected") simulateCustomerFeedback(order)
                 } else {
                     Toast.makeText(this, "Status change not allowed", Toast.LENGTH_SHORT).show()
                 }
@@ -198,7 +202,14 @@ class OrdersActivity : AppCompatActivity() {
             .setNegativeButton("Cancel", null)
             .show()
     }
-
+    // Simulated customer: leaves a star rating and comment when their order is collected
+    private fun simulateCustomerFeedback(order: Order) {
+        val rating = FeedbackRules.simulatedRating()
+        val comment = FeedbackRules.simulatedComment(rating)
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.UK).format(Date())
+        feedbackRepo.addFeedback(order.id, order.customerName, rating, comment, today)
+        Toast.makeText(this, "${order.customerName} left ${FeedbackRules.stars(rating)} feedback", Toast.LENGTH_SHORT).show()
+    }
     private fun editNote(order: Order) {
         val input = EditText(this)
         input.hint = "e.g. Extra shot (optional)"
