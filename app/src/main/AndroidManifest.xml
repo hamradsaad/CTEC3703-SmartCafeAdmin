@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartCafeAdmin">
         <activity
-            android:name=".LoginActivity"
+            android:name=".ui.LoginActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -26,35 +26,35 @@
         </activity>
 
         <activity
-            android:name=".RegisterActivity"
+            android:name=".ui.RegisterActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
         <activity
-            android:name=".PolicyActivity"
+            android:name=".ui.PolicyActivity"
             android:exported="false" />
         <activity
-            android:name=".HomeActivity"
+            android:name=".ui.HomeActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="false" />
         <activity
-            android:name=".ItemDetailActivity"
+            android:name=".ui.ItemDetailActivity"
             android:exported="false" />
         <activity
-            android:name=".EditItemActivity"
+            android:name=".ui.EditItemActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".OrdersActivity"
+            android:name=".ui.OrdersActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".AnalyticsActivity"
+            android:name=".ui.AnalyticsActivity"
             android:exported="false" />
         <activity
-            android:name=".FeedbackActivity"
+            android:name=".ui.FeedbackActivity"
             android:exported="false" />
     </application>
 

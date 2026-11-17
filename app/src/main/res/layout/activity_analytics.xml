@@ -49,7 +49,7 @@
             android:text="Revenue per day"
             android:textStyle="bold" />
 
-        <com.example.smartcafeadmin.BarChartView
+        <com.example.smartcafeadmin.ui.BarChartView
             android:id="@+id/chartRevenue"
             android:layout_width="match_parent"
             android:layout_height="200dp"
@@ -62,7 +62,7 @@
             android:text="Top items (quantity sold)"
             android:textStyle="bold" />
 
-        <com.example.smartcafeadmin.BarChartView
+        <com.example.smartcafeadmin.ui.BarChartView
             android:id="@+id/chartItems"
             android:layout_width="match_parent"
             android:layout_height="200dp"

@@ -1,5 +1,6 @@
 package com.example.smartcafeadmin
 
+import com.example.smartcafeadmin.logic.OrderRules
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

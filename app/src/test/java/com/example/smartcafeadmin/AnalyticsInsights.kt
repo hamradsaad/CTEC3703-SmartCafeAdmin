@@ -1,5 +1,8 @@
 package com.example.smartcafeadmin
 
+import com.example.smartcafeadmin.logic.AnalyticsCalculator
+import com.example.smartcafeadmin.logic.DaySales
+import com.example.smartcafeadmin.logic.ItemSales
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue

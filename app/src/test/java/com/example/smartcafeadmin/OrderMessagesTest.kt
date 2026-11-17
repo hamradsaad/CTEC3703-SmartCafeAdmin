@@ -1,5 +1,6 @@
 package com.example.smartcafeadmin
 
+import com.example.smartcafeadmin.logic.OrderMessages
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

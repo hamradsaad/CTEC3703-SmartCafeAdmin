@@ -1,5 +1,6 @@
 package com.example.smartcafeadmin
 
+import com.example.smartcafeadmin.logic.MenuValidator
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
