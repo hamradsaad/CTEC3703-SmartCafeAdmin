@@ -159,6 +159,30 @@ class DatabaseHelper(context: Context) :
         db.close()
         return item
     }
+    // Search by name or description, optionally inside one category.
+    // The search words go in through ? placeholders, which prevents SQL injection.
+    fun searchMenuItems(term: String, category: String?): List<MenuItem> {
+        val items = mutableListOf<MenuItem>()
+        val db = readableDatabase
+        val pattern = "%$term%"
+        val cursor = if (category == null) {
+            db.rawQuery(
+                "SELECT * FROM MenuItems WHERE name LIKE ? OR description LIKE ? ORDER BY category, name",
+                arrayOf(pattern, pattern)
+            )
+        } else {
+            db.rawQuery(
+                "SELECT * FROM MenuItems WHERE category = ? AND (name LIKE ? OR description LIKE ?) ORDER BY name",
+                arrayOf(category, pattern, pattern)
+            )
+        }
+        while (cursor.moveToNext()) {
+            items.add(menuItemFrom(cursor))
+        }
+        cursor.close()
+        db.close()
+        return items
+    }
 
     fun getAvailableMenuItems(): List<MenuItem> {
         val items = mutableListOf<MenuItem>()

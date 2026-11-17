@@ -4,11 +4,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smartcafeadmin.R
@@ -19,12 +21,13 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 
-// Menu screen: cards with pictures and category filter (CR-01, CR-02, CR-03)
+// Menu screen: search bar, category tabs and item cards (CR-01, CR-02, CR-03)
 class MainActivity : AppCompatActivity() {
 
     private lateinit var db: DatabaseHelper
     private lateinit var adapter: MenuAdapter
     private lateinit var textEmpty: TextView
+    private lateinit var editSearch: EditText
     private var selectedCategory = "All"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         SampleImages.attach(this, db)
 
         textEmpty = findViewById(R.id.textEmpty)
+        editSearch = findViewById(R.id.editSearch)
 
         // Tap a card to open its details page
         adapter = MenuAdapter { item ->
@@ -61,6 +65,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<ExtendedFloatingActionButton>(R.id.fabAdd).setOnClickListener {
             startActivity(Intent(this, EditItemActivity::class.java))
         }
+
+        // Search as you type
+        editSearch.doAfterTextChanged { showMenu() }
 
         setupCategoryChips()
     }
@@ -92,11 +99,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Combines the search words and the selected category
     private fun showMenu() {
-        val items = if (selectedCategory == "All") db.getAllMenuItems()
-        else db.getMenuItemsByCategory(selectedCategory)
+        val term = editSearch.text.toString().trim()
+        val category = if (selectedCategory == "All") null else selectedCategory
+        val items = db.searchMenuItems(term, category)
 
         adapter.submit(items)
+        textEmpty.text = if (term.isEmpty()) "No items in this category yet" else "No items match \"$term\""
         textEmpty.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
     }
 }
