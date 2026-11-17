@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingHorizontal="16dp"
+    android:paddingTop="8dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -20,7 +22,6 @@
             android:text="← Back" />
 
         <TextView
-            android:id="@+id/textOrdersTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -29,41 +30,83 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/buttonSimulate"
+    <!-- Customer simulator -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Simulate customer order" />
+        android:layout_marginTop="4dp"
+        app:cardBackgroundColor="#F3E5D8"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp">
 
-    <com.google.android.material.materialswitch.MaterialSwitch
-        android:id="@+id/switchAutoOrders"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Customer simulator"
+                android:textColor="#5D4A3C"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/buttonSimulate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="+ New customer order" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switchAutoOrders"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Auto orders every 20 seconds"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Auto orders (new customer order every 20 seconds)" />
+        android:layout_marginTop="8dp"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleLine="true"
+            app:singleSelection="true" />
+    </HorizontalScrollView>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Filter by status" />
-
-    <Spinner
-        android:id="@+id/spinnerFilter"
-        android:layout_width="match_parent"
-        android:layout_height="48dp" />
+        android:text="Tap an order to update its status or add a note"
+        android:textColor="#8D7A6B"
+        android:textSize="12sp" />
 
     <TextView
-        android:id="@+id/textOrdersHint"
-        android:layout_width="wrap_content"
+        android:id="@+id/textEmpty"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="Tap an order to change its status or add a note" />
+        android:gravity="center"
+        android:padding="24dp"
+        android:text="No orders here"
+        android:visibility="gone" />
 
-    <ListView
-        android:id="@+id/listOrders"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerOrders"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp" />
 
 </LinearLayout>

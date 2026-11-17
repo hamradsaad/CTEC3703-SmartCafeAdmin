@@ -6,12 +6,9 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ListView
-import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,6 +16,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.smartcafeadmin.R
 import com.example.smartcafeadmin.data.DatabaseHelper
 import com.example.smartcafeadmin.data.FeedbackRepository
@@ -27,6 +26,8 @@ import com.example.smartcafeadmin.logic.OrderMessages
 import com.example.smartcafeadmin.logic.OrderRules
 import com.example.smartcafeadmin.model.Order
 import com.example.smartcafeadmin.model.OrderItem
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import com.google.android.material.materialswitch.MaterialSwitch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -36,11 +37,10 @@ class OrdersActivity : AppCompatActivity() {
 
     private lateinit var db: DatabaseHelper
     private lateinit var feedbackRepo: FeedbackRepository
-    private lateinit var listOrders: ListView
-    private lateinit var spinnerFilter: Spinner
-    private var orders: List<Order> = emptyList()
-
-    private val filterOptions = arrayOf("All") + OrderRules.STATUSES.toTypedArray()
+    private lateinit var adapter: OrderAdapter
+    private lateinit var textEmpty: TextView
+    private val statusChips = mutableMapOf<String, Chip>()
+    private var selectedStatus = "All"
 
     // Fictional data used by the customer simulator
     private val customerNames = listOf("Aisha", "Tom", "Priya", "James", "Sara", "Ben", "Yusuf", "Chloe", "Omar", "Emily")
@@ -83,28 +83,18 @@ class OrdersActivity : AppCompatActivity() {
 
         db = DatabaseHelper(this)
         feedbackRepo = FeedbackRepository(this)
-        listOrders = findViewById(R.id.listOrders)
-        spinnerFilter = findViewById(R.id.spinnerFilter)
-
         db.addSampleOrdersIfEmpty()
 
-        findViewById<Button>(R.id.buttonBack).setOnClickListener {
-            finish()
-        }
+        textEmpty = findViewById(R.id.textEmpty)
+        adapter = OrderAdapter { order -> showOrderDetails(order) }
+        val recycler = findViewById<RecyclerView>(R.id.recyclerOrders)
+        recycler.layoutManager = LinearLayoutManager(this)
+        recycler.adapter = adapter
 
-        // Filter by status
-        spinnerFilter.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, filterOptions)
-        spinnerFilter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                showOrders()
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
+        findViewById<Button>(R.id.buttonBack).setOnClickListener { finish() }
 
         // Customer simulator (one order)
-        findViewById<Button>(R.id.buttonSimulate).setOnClickListener {
-            simulateCustomerOrder()
-        }
+        findViewById<Button>(R.id.buttonSimulate).setOnClickListener { simulateCustomerOrder() }
 
         // Automated order generator switch
         findViewById<MaterialSwitch>(R.id.switchAutoOrders).setOnCheckedChangeListener { _, isChecked ->
@@ -118,12 +108,30 @@ class OrdersActivity : AppCompatActivity() {
             }
         }
 
-        // Tap an order: show details, change status or edit note
-        listOrders.setOnItemClickListener { _, _, position, _ ->
-            showOrderDetails(orders[position])
-        }
-
+        setupStatusChips()
+        showOrders()
         askForNotificationPermission()
+    }
+
+    // Filter tabs: All, Pending, Preparing, Ready, Collected
+    private fun setupStatusChips() {
+        val group = findViewById<ChipGroup>(R.id.chipGroupStatus)
+        for (status in listOf("All") + OrderRules.STATUSES) {
+            val chip = Chip(this)
+            chip.id = View.generateViewId()
+            chip.text = status
+            chip.tag = status
+            chip.isCheckable = true
+            chip.isCheckedIconVisible = false
+            group.addView(chip)
+            statusChips[status] = chip
+            if (status == selectedStatus) chip.isChecked = true
+        }
+        group.setOnCheckedStateChangeListener { g, checkedIds ->
+            val chip = checkedIds.firstOrNull()?.let { g.findViewById<Chip>(it) }
+            selectedStatus = chip?.tag as? String ?: "All"
+            showOrders()
+        }
     }
 
     // Explain why first, then ask. Only asks once per session.
@@ -158,19 +166,17 @@ class OrdersActivity : AppCompatActivity() {
     }
 
     private fun showOrders() {
-        val filter = spinnerFilter.selectedItem?.toString() ?: "All"
-        orders = if (filter == "All") db.getAllOrders() else db.getOrdersByStatus(filter)
+        val orders = if (selectedStatus == "All") db.getAllOrders() else db.getOrdersByStatus(selectedStatus)
+        adapter.submit(orders)
+        textEmpty.visibility = if (orders.isEmpty()) View.VISIBLE else View.GONE
 
-        val lines = orders.map { order ->
-            var line = "#${order.id}  ${order.customerName}  (${order.orderDate})\n" +
-                    "${order.items}\n" +
-                    "£${"%.2f".format(order.total)}  •  ${order.status}"
-            if (order.notes.isNotEmpty()) {
-                line += "\nNote: ${order.notes}"
-            }
-            line
+        // Show how many orders are in each status on the tabs, e.g. "Pending · 3"
+        val all = db.getAllOrders()
+        val counts = all.groupingBy { it.status }.eachCount()
+        statusChips["All"]?.text = "All · ${all.size}"
+        for (status in OrderRules.STATUSES) {
+            statusChips[status]?.text = "$status · ${counts[status] ?: 0}"
         }
-        listOrders.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, lines)
     }
 
     private fun simulateCustomerOrder() {
